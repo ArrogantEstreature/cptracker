@@ -132,6 +132,11 @@ async def on_message(message):
     await update_word_count(message)
     await bot.process_commands(message)
 
+    
+@bot.command(name='test')
+async def test(context):
+    await context.send('Test successful!')
+    
 
 @bot.command(name='checkwords', aliases=['checkword'])
 async def checkwords(context):

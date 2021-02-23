@@ -132,15 +132,9 @@ async def on_message(message):
     await update_word_count(message)
     await bot.process_commands(message)
 
-    
-@bot.command(name='test')
-async def test(context):
-    await context.send('Test successful!')
-    
 
 @bot.command(name='checkwords', aliases=['checkword'])
 async def checkwords(context):
-    print('hi')
     word_count = _get_word_count(context)
     await context.send('{0}, so far you have typed {1} words today.'.format(context.author.mention, word_count))
 

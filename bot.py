@@ -128,17 +128,16 @@ def _get_cp(context):
 #     return tz.lower() in timezones
 
 
-async def update_word_count(message):
+def is_in_valid_channel(message):
     dbname = GUILD_DB_MAPPING[message.channel.guild.name]
-    # Don't update word count if message was not sent in a valid channel
-    if message.channel.name not in DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']:
-        return
-    num_words = len(str(message.content).split())
-    # Need to handle when users edit and delete their messages
-    if daily_word_counts[dbname].find_one({'_id': message.author.id}):
-        daily_word_counts[dbname].update_one({'_id': message.author.id}, {'$inc': {'word_count': num_words}})
+    return message.channel.name in DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']
+
+
+async def update_word_count(dbname, userid, num_words):
+    if daily_word_counts[dbname].find_one({'_id': userid}):
+        daily_word_counts[dbname].update_one({'_id': userid}, {'$inc': {'word_count': num_words}})
     else:
-        post = {'_id': message.author.id, 'word_count': num_words}
+        post = {'_id': userid, 'word_count': num_words}
         daily_word_counts[dbname].insert_one(post)
 
 
@@ -155,8 +154,40 @@ async def on_message(message):
     # Ignore if the message was sent by the bot itself
     if message.author.bot:
         return
-    await update_word_count(message)
+    # Only update word count if message was sent in a valid channel
+    if is_in_valid_channel(message):
+        dbname = GUILD_DB_MAPPING[message.channel.guild.name]
+        userid = message.author.id
+        num_words = len(str(message.content).split())
+        await update_word_count(dbname, userid, num_words)
+    # Continue processing other commands
     await bot.process_commands(message)
+
+
+@bot.event
+async def on_message_delete(message):
+    # Don't run any commands if the bot is not logged in yet
+    if not bot.is_ready():
+        return
+    # Only update word count if message was deleted in a valid channel
+    if is_in_valid_channel(message):
+        dbname = GUILD_DB_MAPPING[message.channel.guild.name]
+        userid = message.author.id
+        num_words = -1 * len(str(message.content).split())
+        await update_word_count(dbname, userid, num_words)
+
+
+@bot.event
+async def on_message_edit(before, after):
+    # Don't run any commands if the bot is not logged in yet
+    if not bot.is_ready():
+        return
+    # Only update word count if message was edited in a valid channel
+    if is_in_valid_channel(before):
+        dbname = GUILD_DB_MAPPING[before.channel.guild.name]
+        userid = before.author.id
+        num_words = len(str(after.content).split()) - len(str(before.content).split())
+        await update_word_count(dbname, userid, num_words)
 
 
 @bot.command(name='checkwords', aliases=['checkword'])

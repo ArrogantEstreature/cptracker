@@ -63,7 +63,7 @@ class WordCountCPUpdater(commands.Cog):
         self.date = datetime.datetime.now(pytz.timezone(TIMEZONE)).date()
         self.update_word_count_cp.start()
 
-    @tasks.loop(seconds=10.0)
+    @tasks.loop(minutes=1.0)
     async def update_word_count_cp(self):
         # Don't run any commands if the bot is not logged in yet
         if not self.bot.is_ready():
@@ -102,12 +102,12 @@ def _update_cp(db, user_id, val):
 
 
 def _get_word_count(context):
-    dbname = GUILD_DB_MAPPING[context.guild]
+    dbname = GUILD_DB_MAPPING[context.guild.name]
     return res['word_count'] if (res := daily_word_counts[dbname].find_one({'_id': context.author.id})) else 0
 
 
 def _get_cp(context):
-    dbname = GUILD_DB_MAPPING[context.guild]
+    dbname = GUILD_DB_MAPPING[context.guild.name]
     return res['cp'] if (res := cpdatas[dbname].find_one({'_id': context.author.id})) else 0
 
 
@@ -129,7 +129,7 @@ def _get_cp(context):
 
 
 async def update_word_count(message):
-    dbname = GUILD_DB_MAPPING[message.channel.guild]
+    dbname = GUILD_DB_MAPPING[message.channel.guild.name]
     # Don't update word count if message was not sent in a valid channel
     if message.channel.name not in DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']:
         return
@@ -173,7 +173,7 @@ async def checkcp(context):
 
 @bot.command(name='updatecp', aliases=['updateCP'])
 async def updatecp(context, val, reason='Manual Adjustment'):
-    dbname = GUILD_DB_MAPPING[context.guild]
+    dbname = GUILD_DB_MAPPING[context.guild.name]
     user_id = context.author.id
     _update_cp(cpdatas[dbname], user_id, int(val))
     remaining_cp = cpdatas[dbname].find_one({'_id': user_id})['cp']

@@ -133,6 +133,17 @@ def is_in_valid_channel(message):
     return message.channel.name in DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']
 
 
+def is_within_today(message):
+    from_tz = pytz.utc
+    to_tz = pytz.timezone(TIMEZONE)
+    today = datetime.datetime.now(pytz.timezone(TIMEZONE)).date()
+    message_time = message.created_at
+    message_utc_time = from_tz.localize(message_time)
+    message_central_time = message_utc_time.astimezone(to_tz)
+    message_date = message_central_time.date()
+    return today == message_date
+
+
 async def update_word_count(dbname, userid, num_words):
     if daily_word_counts[dbname].find_one({'_id': userid}):
         daily_word_counts[dbname].update_one({'_id': userid}, {'$inc': {'word_count': num_words}})
@@ -171,10 +182,12 @@ async def on_message_delete(message):
         return
     # Only update word count if message was deleted in a valid channel
     if is_in_valid_channel(message):
-        dbname = GUILD_DB_MAPPING[message.channel.guild.name]
-        userid = message.author.id
-        num_words = -1 * len(str(message.content).split())
-        await update_word_count(dbname, userid, num_words)
+        # Only update word count if message was deleted within a day
+        if is_within_today(message):
+            dbname = GUILD_DB_MAPPING[message.channel.guild.name]
+            userid = message.author.id
+            num_words = -1 * len(str(message.content).split())
+            await update_word_count(dbname, userid, num_words)
 
 
 @bot.event
@@ -184,10 +197,12 @@ async def on_message_edit(before, after):
         return
     # Only update word count if message was edited in a valid channel
     if is_in_valid_channel(before):
-        dbname = GUILD_DB_MAPPING[before.channel.guild.name]
-        userid = before.author.id
-        num_words = len(str(after.content).split()) - len(str(before.content).split())
-        await update_word_count(dbname, userid, num_words)
+        # Only update word count if message was edited within a day
+        if is_within_today(before):
+            dbname = GUILD_DB_MAPPING[before.channel.guild.name]
+            userid = before.author.id
+            num_words = len(str(after.content).split()) - len(str(before.content).split())
+            await update_word_count(dbname, userid, num_words)
 
 
 @bot.command(name='checkwords', aliases=['checkword'])

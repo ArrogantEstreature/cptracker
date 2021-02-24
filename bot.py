@@ -160,6 +160,9 @@ async def updatecp(context, val, reason=''):
     '''.format(context.author.mention, reason, val, remaining_cp))
 
 
+def test():
+    print('hi')
+
 # @bot.command(name='checktimezone', aliases=['checktz'])
 # async def checktimezone(context):
 #     tz = get_timezone(context)

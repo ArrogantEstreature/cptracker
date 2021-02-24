@@ -11,19 +11,36 @@ from discord.ext import tasks, commands
 from pymongo import MongoClient
 
 TIMEZONE = 'America/Chicago'
-GUILD_NAME = 'Star Wars WM'
-VALID_CHANNELS = [
-    'hangar-bay',
-    'training-rooms',
-    'comms-room',
-    'conference-room',
-    'meditation-chamber',
-    'mess-hall',
-    'personal-quarters',
-    'medbay',
-    'mos-eisley',
-]
-CP_TRACKER_CHANNEL = 'cp-tracker'
+DB_GUILD_CHANNEL_MAPPING = {
+    'sw5e': {
+        'guild': 'Star Wars WM',
+        'cp_tracker_channel': 'cp-tracker',
+        'valid_channels': [
+            'hangar-bay',
+            'training-rooms',
+            'comms-room',
+            'conference-room',
+            'meditation-chamber',
+            'mess-hall',
+            'personal-quarters',
+            'medbay',
+            'mos-eisley',
+        ],
+    },
+    'lasthope': {
+        'guild': 'Last Hope Campaign!',
+        'cp_tracker_channel': 'chat-point-tracker',
+        'valid_channels': [
+            'miserable-mug',
+            'around-town',
+            'outside-town',
+        ],
+    },
+}
+GUILD_DB_MAPPING = {
+    'Star Wars WM': 'sw5e',
+    'Last Hope Campaign!': 'lasthope',
+}
 # INVALID_TIMEZONE_MESSAGE = '''
 # Your timezone setting must be a valid TZ Database Name.
 # Please see the following page and choose your timezone: https://kevinnovak.github.io/Time-Zone-Picker/
@@ -32,10 +49,10 @@ CP_TRACKER_CHANNEL = 'cp-tracker'
 
 bot = commands.Bot(command_prefix='!')
 cluster = MongoClient('mongodb+srv://bachang:{0}@cluster0.pry4u.mongodb.net/test'.format(os.environ['password']))
-database = cluster['sw5e']
-cpdata = database['cpdata']
+databases = {dbname: cluster[dbname] for dbname in DB_GUILD_CHANNEL_MAPPING.keys()}
+cpdatas = {dbname: database['cpdata'] for (dbname, database) in databases.items()}
+daily_word_counts = {dbname: database['daily_word_count'] for (dbname, database) in databases.items()}
 # timezone = database['timezone']
-daily_word_count = database['daily_word_count']
 
 
 class WordCountCPUpdater(commands.Cog):
@@ -54,38 +71,44 @@ class WordCountCPUpdater(commands.Cog):
         date_now = datetime.datetime.now(pytz.timezone(TIMEZONE)).date()
         if self.date < date_now:
             datestr = self.date.strftime('%d/%m/%Y')
-            for post in daily_word_count.find():
-                userid = post['_id']
-                word_count = post['word_count']
-                cp_gained = word_cp if ((word_cp := word_count // self.word_count_per_cp) <= self.max_daily_cp) else self.max_daily_cp
+            for dbname in DB_GUILD_CHANNEL_MAPPING.keys():
+                guild = DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
+                cp_tracker_channel = DB_GUILD_CHANNEL_MAPPING[dbname]['cp_tracker_channel']
+                channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=cp_tracker_channel)
+                await channel.send('__CP earned for roleplaying on {0}:__'.format(datestr))
+                for post in daily_word_counts[dbname].find():
+                    userid = post['_id']
+                    word_count = post['word_count']
+                    cp_gained = word_cp if ((word_cp := word_count // self.word_count_per_cp) <= self.max_daily_cp) else self.max_daily_cp
 
-                # Update CP
-                _update_cp(userid, cp_gained)
+                    # Update CP
+                    _update_cp(cpdatas[dbname], userid, cp_gained)
 
-                # Reset word count
-                daily_word_count.update_one({'_id': userid}, {'$set': {'word_count': 0}})
+                    # Reset word count
+                    daily_word_counts[dbname].update_one({'_id': userid}, {'$set': {'word_count': 0}})
 
-                # Notify members
-                user = await bot.fetch_user(userid)
-                channel = discord.utils.get(bot.get_all_channels(), guild__name=GUILD_NAME, name=CP_TRACKER_CHANNEL)
-                await channel.send('{0} earned {1} CP for writing {2} words on {3}'.format(user.name, cp_gained, word_count, datestr))
+                    # Notify members
+                    user = await bot.fetch_user(userid)
+                    await channel.send('{0} earned {1} CP for writing {2} words on {3}'.format(user.name, cp_gained, word_count, datestr))
             self.date = date_now
 
 
-def _update_cp(user_id, val):
-    if cpdata.find_one({'_id': user_id}):
-        cpdata.update_one({'_id': user_id}, {'$inc': {'cp': val}})
+def _update_cp(db, user_id, val):
+    if db.find_one({'_id': user_id}):
+        db.update_one({'_id': user_id}, {'$inc': {'cp': val}})
     else:
         post = {'_id': user_id, 'cp': val}
-        cpdata.insert_one(post)
+        db.insert_one(post)
 
 
 def _get_word_count(context):
-    return res['word_count'] if (res := daily_word_count.find_one({'_id': context.author.id})) else 0
+    dbname = GUILD_DB_MAPPING[context.guild]
+    return res['word_count'] if (res := daily_word_counts[dbname].find_one({'_id': context.author.id})) else 0
 
 
 def _get_cp(context):
-    return res['cp'] if (res := cpdata.find_one({'_id': context.author.id})) else 0
+    dbname = GUILD_DB_MAPPING[context.guild]
+    return res['cp'] if (res := cpdatas[dbname].find_one({'_id': context.author.id})) else 0
 
 
 # def get_timezone(context):
@@ -106,16 +129,17 @@ def _get_cp(context):
 
 
 async def update_word_count(message):
+    dbname = GUILD_DB_MAPPING[message.channel.guild]
     # Don't update word count if message was not sent in a valid channel
-    if message.channel.name not in VALID_CHANNELS:
+    if message.channel.name not in DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']:
         return
     num_words = len(str(message.content).split())
     # Need to handle when users edit and delete their messages
-    if daily_word_count.find_one({'_id': message.author.id}):
-        daily_word_count.update_one({'_id': message.author.id}, {'$inc': {'word_count': num_words}})
+    if daily_word_counts[dbname].find_one({'_id': message.author.id}):
+        daily_word_counts[dbname].update_one({'_id': message.author.id}, {'$inc': {'word_count': num_words}})
     else:
         post = {'_id': message.author.id, 'word_count': num_words}
-        daily_word_count.insert_one(post)
+        daily_word_counts[dbname].insert_one(post)
 
 
 @bot.event
@@ -148,10 +172,11 @@ async def checkcp(context):
 
 
 @bot.command(name='updatecp', aliases=['updateCP'])
-async def updatecp(context, val, reason=''):
+async def updatecp(context, val, reason='Manual Adjustment'):
+    dbname = GUILD_DB_MAPPING[context.guild]
     user_id = context.author.id
-    _update_cp(user_id, int(val))
-    remaining_cp = cpdata.find_one({'_id': user_id})['cp']
+    _update_cp(cpdatas[dbname], user_id, int(val))
+    remaining_cp = cpdatas[dbname].find_one({'_id': user_id})['cp']
     await context.send('''
 **User**: {0}
 **Reason**: {1}

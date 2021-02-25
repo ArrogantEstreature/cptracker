@@ -81,16 +81,6 @@ def _delete_user(db, user_id):
     db.delete_one({'_id': user_id})
 
 
-def _get_word_count(context):
-    dbname = config.GUILD_DB_MAPPING[context.guild.name]
-    return res['word_count'] if (res := daily_word_counts[dbname].find_one({'_id': context.author.id})) else 0
-
-
-def _get_cp(context):
-    dbname = config.GUILD_DB_MAPPING[context.guild.name]
-    return res['cp'] if (res := cpdatas[dbname].find_one({'_id': context.author.id})) else 0
-
-
 # def get_timezone(context):
 #     return res['tz'] if (res := timezone.find_one({'_id': context.author.id})) else None
 
@@ -193,13 +183,15 @@ async def on_message_edit(before, after):
 
 @bot.command(name='checkwords', aliases=['checkword'])
 async def checkwords(context):
-    word_count = _get_word_count(context)
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+    word_count = res['word_count'] if (res := daily_word_counts[dbname].find_one({'_id': context.author.id})) else 0
     await context.send('{0}, so far you have typed {1} words today.'.format(context.author.mention, word_count))
 
 
 @bot.command(name='checkcp', aliases=['checkCP'])
 async def checkcp(context):
-    cp = _get_cp(context)
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+    cp = res['cp'] if (res := cpdatas[dbname].find_one({'_id': context.author.id})) else 0
     await context.send('{0}, you currently have {1} CP.'.format(context.author.mention, cp))
 
 

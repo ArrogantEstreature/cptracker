@@ -11,6 +11,9 @@ from discord.ext import tasks, commands
 from pymongo import MongoClient
 import config
 
+# TODO: Add error handling for when the !updatecp command is called with insufficient arguments
+# TODO: Group commands into cogs
+# TODO: Find word count update on delete workaround for Tupperbot
 
 bot = commands.Bot(command_prefix='!')
 cluster = MongoClient('mongodb+srv://bachang:{0}@cluster0.pry4u.mongodb.net/test'.format(os.environ['password']))
@@ -21,6 +24,7 @@ daily_word_counts = {dbname: database['daily_word_count'] for (dbname, database)
 
 
 class WordCountCPUpdater(commands.Cog):
+
     def __init__(self, bot_instance):
         self.bot = bot_instance
         self.max_daily_cp = 5
@@ -43,18 +47,24 @@ class WordCountCPUpdater(commands.Cog):
                 await channel.send('__CP earned for roleplaying on {0}:__'.format(datestr))
                 for post in daily_word_counts[dbname].find():
                     userid = post['_id']
-                    word_count = post['word_count']
-                    cp_gained = word_cp if ((word_cp := word_count // self.word_count_per_cp) <= self.max_daily_cp) else self.max_daily_cp
 
-                    # Update CP
-                    remaining_cp = _update_cp(cpdatas[dbname], userid, cp_gained)
+                    # Check to see if user exists. Otherwise, delete user and continue
+                    try:
+                        user = await bot.fetch_user(userid)
+                    except discord.errors.NotFound:
+                        _delete_user(cpdatas[dbname], userid)
+                    else:
+                        word_count = post['word_count']
+                        cp_gained = word_cp if ((word_cp := word_count // self.word_count_per_cp) <= self.max_daily_cp) else self.max_daily_cp
 
-                    # Reset word count
-                    daily_word_counts[dbname].update_one({'_id': userid}, {'$set': {'word_count': 0}})
+                        # Update CP
+                        remaining_cp = _update_cp(cpdatas[dbname], userid, cp_gained)
 
-                    # Notify members
-                    user = await bot.fetch_user(userid)
-                    await channel.send('{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp))
+                        # Reset word count
+                        daily_word_counts[dbname].update_one({'_id': userid}, {'$set': {'word_count': 0}})
+
+                        # Notify members
+                        await channel.send('{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp))
             self.date = date_now
 
 
@@ -65,6 +75,10 @@ def _update_cp(db, user_id, val):
         post = {'_id': user_id, 'cp': val}
         db.insert_one(post)
     return db.find_one({'_id': user_id})['cp']
+
+
+def _delete_user(db, user_id):
+    db.delete_one({'_id': user_id})
 
 
 def _get_word_count(context):

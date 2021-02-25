@@ -146,19 +146,19 @@ async def on_message(message):
         await bot.process_commands(message)
 
 
-@bot.event
-async def on_message_delete(message):
-    # Don't run any commands if the bot is not logged in yet
-    if not bot.is_ready():
-        return
-    # Only update word count if message was deleted in a valid channel
-    if is_in_valid_channel(message):
-        # Only update word count if message was deleted within a day
-        if is_within_today(message):
-            dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
-            userid = message.author.id
-            num_words = -1 * len(str(message.content).split())
-            await update_word_count(dbname, userid, num_words)
+# @bot.event
+# async def on_message_delete(message):
+#     # Don't run any commands if the bot is not logged in yet
+#     if not bot.is_ready():
+#         return
+#     # Only update word count if message was deleted in a valid channel
+#     if is_in_valid_channel(message):
+#         # Only update word count if message was deleted within a day
+#         if is_within_today(message):
+#             dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
+#             userid = message.author.id
+#             num_words = -1 * len(str(message.content).split())
+#             await update_word_count(dbname, userid, num_words)
 
 
 @bot.event

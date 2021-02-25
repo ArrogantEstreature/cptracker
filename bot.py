@@ -47,14 +47,14 @@ class WordCountCPUpdater(commands.Cog):
                     cp_gained = word_cp if ((word_cp := word_count // self.word_count_per_cp) <= self.max_daily_cp) else self.max_daily_cp
 
                     # Update CP
-                    _update_cp(cpdatas[dbname], userid, cp_gained)
+                    remaining_cp = _update_cp(cpdatas[dbname], userid, cp_gained)
 
                     # Reset word count
                     daily_word_counts[dbname].update_one({'_id': userid}, {'$set': {'word_count': 0}})
 
                     # Notify members
                     user = await bot.fetch_user(userid)
-                    await channel.send('{0} earned {1} CP for writing {2} words on {3}'.format(user.name, cp_gained, word_count, datestr))
+                    await channel.send('{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp))
             self.date = date_now
 
 
@@ -64,6 +64,7 @@ def _update_cp(db, user_id, val):
     else:
         post = {'_id': user_id, 'cp': val}
         db.insert_one(post)
+    return db.find_one({'_id': user_id})['cp']
 
 
 def _get_word_count(context):

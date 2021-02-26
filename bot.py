@@ -42,6 +42,7 @@ class WordCountCPUpdater(commands.Cog):
         if self.date < date_now:
             datestr = self.date.strftime('%d/%m/%Y')
             for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys():
+                notification_list = []
                 guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
                 cp_tracker_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['cp_tracker_channel']
                 channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=cp_tracker_channel)
@@ -64,8 +65,10 @@ class WordCountCPUpdater(commands.Cog):
                         # Reset word count
                         daily_word_counts[dbname].update_one({'_id': userid}, {'$set': {'word_count': 0}})
 
-                        # Notify members
-                        await channel.send('{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp))
+                        # Add member notification message to list
+                        notification_list.append('{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp))
+                # Notify members
+                await channel.send('\n'.join(notification_list))
             self.date = date_now
 
 

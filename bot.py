@@ -4,6 +4,7 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import os
+import traceback
 import datetime
 import pytz
 import discord
@@ -122,6 +123,15 @@ async def update_word_count(dbname, userid, num_words):
         daily_word_counts[dbname].insert_one(post)
 
 
+@bot.before_invoke
+async def check_is_in_valid_server(context):
+    # Check if the bot is configured to be run on the server before running any commands
+    try:
+        config.GUILD_DB_MAPPING[context.guild.name]
+    except KeyError:
+        await context.send('ERROR: This bot is not configured to be run on this server. Please contact tech support for help.')
+
+
 @bot.event
 async def on_ready():
     print('{0} has connected to Discord!'.format(bot.user))
@@ -135,20 +145,18 @@ async def on_message(message):
     # Ignore if the message was sent by the bot itself
     if message.author.bot:
         return
-    # Check if the bot is configured to be run on the server
+    # Only update word count if message was sent in a valid channel
     try:
-        config.GUILD_DB_MAPPING[message.channel.guild.name]
-    except KeyError:
-        await message.channel.send('ERROR: This bot is not configured to be run on this server. Please contact tech support for help.')
-    else:
-        # Only update word count if message was sent in a valid channel
         if is_in_valid_channel(message):
             dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
             userid = message.author.id
             num_words = len(str(message.content).split())
             await update_word_count(dbname, userid, num_words)
-        # Continue processing other commands
-        await bot.process_commands(message)
+    except KeyError:
+        # Print exception traceback to stderr but continue execution
+        traceback.print_exc()
+    # Continue processing other commands
+    await bot.process_commands(message)
 
 
 # @bot.event

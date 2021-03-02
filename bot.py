@@ -220,6 +220,11 @@ async def updatecp(context, val, reason='Manual Adjustment'):
     '''.format(context.author.mention, reason, val, remaining_cp))
 
 
+@bot.command(name='checkmyass')
+async def checkmyass(context):
+    await context.send('Damn {0}, you ***乇乂丅尺卂 丅卄工匚匚***'.format(context.author.mention))
+
+
 # @bot.command(name='checktimezone', aliases=['checktz'])
 # async def checktimezone(context):
 #     tz = get_timezone(context)

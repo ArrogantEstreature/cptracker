@@ -4,6 +4,7 @@
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 import os
+import random
 import traceback
 import datetime
 import pytz
@@ -222,8 +223,33 @@ async def updatecp(context, val, reason='Manual Adjustment'):
 
 @bot.command(name='checkmyass')
 async def checkmyass(context):
-    await context.send('Damn {0}, you ***乇乂丅尺卂 丅卄工匚匚***'.format(context.author.mention))
+    rand = random.randint(1,11)
+    if rand == 11:
+        message = '{0}, you thinn like a washboard. Does it hurt when you sit?'
+    else:
+        if rand % 2:
+            message = 'Damn {0}, you ***乇乂丅尺卂 丅卄工匚匚***'
+        else:
+            message = 'Damn {0}, you ***ᗪㄩ爪爪ㄚ　ㄒ卄丨匚匚***'
 
+    await context.send(message.format(context.author.mention))
+
+
+@bot.command(name='checkmyschlong')
+async def checkmyschlong(context):
+    rand = random.randint(1,13)
+    if rand == 13:
+        message = "You sure you have one {0}? I can't find it :face_with_monocle:"
+    else:
+        if rand % 3 == 0:
+            message = "Damn {0}, you're a tripod!"
+        elif rand % 3 == 1:
+            message = 'Damn {0}, your schlong can fill a Sarlacc pit!'
+        elif rand % 3 == 2:
+            message = 'Damn {0}, you got a huge ass schlong-a-long-a-ding-dong!'
+        else:
+            message = 'Damn {0}, you gotta put that monster away at the dinner table!'
+    await context.send(message.format(context.author.mention))
 
 # @bot.command(name='checktimezone', aliases=['checktz'])
 # async def checktimezone(context):

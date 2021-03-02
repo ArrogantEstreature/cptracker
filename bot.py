@@ -102,6 +102,19 @@ def _delete_user(db, user_id):
 #     timezones = [x.lower() for x in pytz.all_timezones]
 #     return tz.lower() in timezones
 
+def kano_easter(message):
+    if message.author.id == 339937732023287809: # Kano's ID
+        rand = random.randint(1, 100)
+        if rand == 100:
+            message.channel.send('Fuck you {0}!'.format(message.author.mention))
+
+
+def bj_easter(message):
+    if message.author.id == 253356441073614848: # BJ's ID
+        rand = random.randint(1, 100)
+        if rand == 100:
+            message.channel.send("{0}, we’ve been trying to reach you about your car's extended warranty.".format(message.author.mention))
+
 
 def is_in_valid_channel(message):
     dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
@@ -149,6 +162,10 @@ async def on_message(message):
     # Ignore if the message was sent by the bot itself
     if message.author.bot:
         return
+    # Only run easter eggs in non-RP channels
+    if not is_in_valid_channel(message):
+        kano_easter(message)
+        bj_easter(message)
     # Only update word count if message was sent in a valid channel
     try:
         if is_in_valid_channel(message):

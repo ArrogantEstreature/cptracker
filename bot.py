@@ -176,6 +176,7 @@ async def on_message(message):
     if not is_in_valid_channel(message):
         await kano_easter(message)
         await bj_easter(message)
+        await alastor_easter(message)
     # Only update word count if message was sent in a valid channel
     try:
         if is_in_valid_channel(message):

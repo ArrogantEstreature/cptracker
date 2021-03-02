@@ -126,6 +126,14 @@ async def alastor_easter(message):
                     await message.channel.send("{0} used Disintegrate! It dealt {1} force damage!".format(message.author.mention, damage))
 
 
+async def lewis_easter(message):
+    if message.author.id == 475349160892301322: # Lewis' ID
+        if 'love' in message.content.lower():
+            rand = random.randint(1, 3)
+            if rand == 3:
+                await message.channel.send("Everybody, have your daily dose of Lew's Love! Courtesy of {0}.".format(message.author.mention))
+
+
 def is_in_valid_channel(message):
     dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
     return message.channel.name in config.DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']

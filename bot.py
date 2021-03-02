@@ -230,7 +230,7 @@ async def checkmyass(context):
         if rand % 2:
             message = 'Damn {0}, you ***乇乂丅尺卂 丅卄工匚匚***'
         else:
-            message = 'Damn {0}, you ***ᗪㄩ爪爪ㄚ　ㄒ卄丨匚匚***'
+            message = 'Damn {0}, you ***ᗪㄩ爪爪ㄚ ㄒ卄丨匚匚***'
 
     await context.send(message.format(context.author.mention))
 

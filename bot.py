@@ -116,6 +116,16 @@ async def bj_easter(message):
             await message.channel.send("{0}, we’ve been trying to reach you about your car's extended warranty.".format(message.author.mention))
 
 
+async def alastor_easter(message):
+    if message.author.id == 266758722045345811: # Ronnie's ID
+        if message.guild.name == 'Last Hope Campaign!':
+            if 'disintegrate' in message.content.lower():
+                rand = random.randint(1, 2)
+                if rand == 2:
+                    damage = sum([random.randint(1, 6) for i in range(10)]) + 40
+                    await message.channel.send("{0} used Disintegrate! It dealt {1} force damage!".format(message.author.mention, damage))
+
+
 def is_in_valid_channel(message):
     dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
     return message.channel.name in config.DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']

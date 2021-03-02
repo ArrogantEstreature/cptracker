@@ -104,15 +104,15 @@ def _delete_user(db, user_id):
 
 async def kano_easter(message):
     if message.author.id == 339937732023287809: # Kano's ID
-        rand = random.randint(1, 100)
-        if rand == 100:
+        rand = random.randint(1, 50)
+        if rand == 50:
             await message.channel.send('Fuck you {0}!'.format(message.author.mention))
 
 
 async def bj_easter(message):
     if message.author.id == 253356441073614848: # BJ's ID
-        rand = random.randint(1, 100)
-        if rand == 100:
+        rand = random.randint(1, 50)
+        if rand == 50:
             await message.channel.send("{0}, we’ve been trying to reach you about your car's extended warranty.".format(message.author.mention))
 
 

@@ -223,30 +223,37 @@ async def updatecp(context, val, reason='Manual Adjustment'):
 
 @bot.command(name='checkmyass')
 async def checkmyass(context):
-    rand = random.randint(1,11)
-    if rand == 11:
+    rand = random.randint(1,13)
+    num_responses = 4
+    if rand == 13:
         message = '{0}, you thinn like a washboard. Does it hurt when you sit?'
     else:
-        if rand % 2:
+        if rand % num_responses == 0:
             message = 'Damn {0}, you ***乇乂丅尺卂 丅卄工匚匚***'
-        else:
+        elif rand % num_responses == 1:
             message = 'Damn {0}, you ***ᗪㄩ爪爪ㄚ ㄒ卄丨匚匚***'
-
+        elif rand % num_responses == 2:
+            message = 'Damn {0}, you got a damn fine dumptruck!'
+        else:
+            message = 'Damn shawty, you got a shelf!'
     await context.send(message.format(context.author.mention))
 
 
 @bot.command(name='checkmyschlong')
 async def checkmyschlong(context):
     rand = random.randint(1,13)
+    num_responses = 5
     if rand == 13:
         message = "You sure you have one {0}? I can't find it :face_with_monocle:"
     else:
-        if rand % 3 == 0:
+        if rand % num_responses == 0:
             message = "Damn {0}, you're a tripod!"
-        elif rand % 3 == 1:
+        elif rand % num_responses == 1:
             message = 'Damn {0}, your schlong can fill a Sarlacc pit!'
-        elif rand % 3 == 2:
+        elif rand % num_responses == 2:
             message = 'Damn {0}, you got a huge ass schlong-a-long-a-ding-dong!'
+        elif rand % num_responses == 3:
+            message = 'Damn {0}, you got a third leg!'
         else:
             message = 'Damn {0}, you gotta put that monster away at the dinner table!'
     await context.send(message.format(context.author.mention))

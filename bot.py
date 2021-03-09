@@ -256,10 +256,11 @@ async def updatecp(context, val, reason='Manual Adjustment'):
 def get_nearest_user(context, username):
     all_names = {}
     for member in context.guild.members:
-        if member.nick:
-            all_names[member.nick] = member
-        else:
-            all_names[member.name] = member
+        if not member.bot:
+            if member.nick:
+                all_names[member.nick] = member
+            else:
+                all_names[member.name] = member
     nearest_username = difflib.get_close_matches(username, all_names.keys(), 1, 0.4)
     return all_names[nearest_username[0]] if nearest_username else None
 

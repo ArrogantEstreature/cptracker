@@ -14,9 +14,9 @@ from discord.ext import tasks, commands
 from pymongo import MongoClient
 import config
 
-# TODO: Add error handling for when the !updatecp command is called with insufficient arguments
 # TODO: Group commands into cogs
 # TODO: Find word count update on delete workaround for Tupperbot
+# TODO: Update user search function
 
 intents = discord.Intents.default()
 intents.members = True
@@ -253,6 +253,14 @@ async def updatecp(context, val, reason='Manual Adjustment'):
     '''.format(context.author.mention, reason, val, remaining_cp))
 
 
+@updatecp.error
+async def update_error(context, error):
+    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+        await context.send('ERROR: The update function requires the CP value argument. For example: `!updatecp 5 "Completing A Mission"`')
+    else:
+        traceback.print_exc()
+
+
 def get_nearest_user(context, username):
     all_names = {}
     for member in context.guild.members:
@@ -294,7 +302,7 @@ async def givecp(context, val, username, reason='Manual Adjustment'):
 @givecp.error
 async def givecp_error(context, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username.')
+        await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username. For example: `!givecp 5 "DM Creo" "Being an awesome DM"`')
     elif isinstance(error, discord.ext.commands.errors.MissingAnyRole):
         await context.send('You do not have permission to run this command.')
     else:

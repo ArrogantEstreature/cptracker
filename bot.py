@@ -5,6 +5,7 @@
 
 import os
 import random
+import difflib
 import traceback
 import datetime
 import pytz
@@ -17,7 +18,9 @@ import config
 # TODO: Group commands into cogs
 # TODO: Find word count update on delete workaround for Tupperbot
 
-bot = commands.Bot(command_prefix='!')
+intents = discord.Intents.default()
+intents.members = True
+bot = commands.Bot(command_prefix='!', intents=intents)
 cluster = MongoClient('mongodb+srv://bachang:{0}@cluster0.pry4u.mongodb.net/test'.format(os.environ['password']))
 databases = {dbname: cluster[dbname] for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys()}
 cpdatas = {dbname: database['cpdata'] for (dbname, database) in databases.items()}
@@ -248,6 +251,53 @@ async def updatecp(context, val, reason='Manual Adjustment'):
 **CP**: {2}
 **CP Remaining**: {3}
     '''.format(context.author.mention, reason, val, remaining_cp))
+
+
+def get_nearest_user(context, username):
+    all_names = {}
+    for member in context.guild.members:
+        if member.nick:
+            all_names[member.nick] = member
+        else:
+            all_names[member.name] = member
+    nearest_username = difflib.get_close_matches(username, all_names.keys(), 1, 0.4)
+    return all_names[nearest_username[0]] if nearest_username else None
+
+
+@bot.command(name='givecp', aliases=['giveCP'])
+@commands.has_any_role('DM', 'Lead DM', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+async def givecp(context, val, username, reason='Manual Adjustment'):
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+    user = get_nearest_user(context, username)
+    if not user:
+        await context.send("Can't find a valid user matching {0}.".format(username))
+    else:
+        user_id = user.id
+        _update_cp(cpdatas[dbname], user_id, int(val))
+        remaining_cp = cpdatas[dbname].find_one({'_id': user_id})['cp']
+        messages = [
+            '{0} parcels out {1} CP to {2} for {3}',
+            '{0} forks over {1} CP to {2} for {3}',
+            '{0} dishes out {1} CP to {2} for {3}',
+            '{0} presents {1} CP to {2} for {3}',
+            '{0} administers {1} CP to {2} for {3}',
+            '{0} tips {1} CP to {2} for {3}',
+            '{0} bequeaths {1} CP to {2} for {3}',
+            '{0}...you know..."gives"  ( ͡° ͜ʖ ͡°) {1} CP to {2} for {3}',
+        ]
+        rand = random.randint(1, 8)
+        message = messages[rand-1] + '\n**CP Remaining**: {4}'
+        await context.send(message.format(context.author.mention, val, user.mention, reason, remaining_cp))
+
+
+@givecp.error
+async def givecp_error(context, error):
+    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+        await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username.')
+    elif isinstance(error, discord.ext.commands.errors.MissingAnyRole):
+        await context.send('You do not have permission to run this command.')
+    else:
+        traceback.print_exc()
 
 
 @bot.command(name='checkmyass')

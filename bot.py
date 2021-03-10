@@ -133,7 +133,8 @@ async def lewis_easter(message):
 
 def is_in_valid_channel(message):
     dbname = config.GUILD_DB_MAPPING[message.channel.guild.name]
-    return message.channel.name in config.DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channels']
+    valid_channel_category_ids = config.DB_GUILD_CHANNEL_MAPPING[dbname]['valid_channel_category_ids']
+    return message.channel.category_id in valid_channel_category_ids
 
 
 def is_within_today(message):

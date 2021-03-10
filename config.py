@@ -3,25 +3,16 @@ DB_GUILD_CHANNEL_MAPPING = {
     'sw5e': {
         'guild': 'Star Wars WM',
         'cp_tracker_channel': 'cp-tracker',
-        'valid_channels': [
-            'hangar-bay',
-            'training-rooms',
-            'comms-room',
-            'conference-room',
-            'meditation-chamber',
-            'mess-hall',
-            'personal-quarters',
-            'medbay',
-            'mos-eisley',
+        'valid_channel_category_ids': [
+            797985544440119296,
+            797987844122738728,
         ],
     },
     'lasthope': {
         'guild': 'Last Hope Campaign!',
         'cp_tracker_channel': 'chat-point-tracker',
-        'valid_channels': [
-            'miserable-mug',
-            'around-town',
-            'outside-town',
+        'valid_channel_category_ids': [
+            763950173079863297,
         ],
     },
 }

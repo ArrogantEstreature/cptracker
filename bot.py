@@ -355,6 +355,15 @@ async def checkmyschlong(context):
             message = 'Damn {0}, you gotta put that monster away at the dinner table!'
     await context.send(message.format(context.author.mention))
 
+
+@bot.command(name='destroyamotherfucker')
+async def destroyamotherfucker(context):
+    if context.message.author.id == 266758722045345811:  # Ronnie's ID
+        await context.send('{0} just ***DESTROYED*** <@!305338506253959168>, setting his CP to -1000 permanently!'.format(context.author.mention))
+    else:
+        await context.send('Sorry, but you do not have the power to destroy a motherfucker.')
+
+
 # @bot.command(name='checktimezone', aliases=['checktz'])
 # async def checktimezone(context):
 #     tz = get_timezone(context)

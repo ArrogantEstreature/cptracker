@@ -273,7 +273,7 @@ def get_nearest_user(context, usernames):
                 all_names[member.name] = member
     usernames = usernames.split(',')
     for username in usernames:
-        nearest_username = difflib.get_close_matches(username, all_names.keys(), 1, 0.4)
+        nearest_username = difflib.get_close_matches(username, all_names.keys(), 1, 0.5)
         if nearest_username:
             nearest_users.append(all_names[nearest_username[0]])
         else:
@@ -286,7 +286,8 @@ def get_nearest_user(context, usernames):
 async def givecp(context, val, username, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
-    await context.send("Can't find a valid user matching the following inputs: {0}.".format(','.join(invalid_usernames)))
+    if invalid_usernames:
+        await context.send("Can't find a valid user matching the following inputs: {0}".format(','.join(invalid_usernames)))
     for user in nearest_users:
         user_id = user.id
         _update_cp(cpdatas[dbname], user_id, int(val))

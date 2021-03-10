@@ -261,7 +261,7 @@ async def update_error(context, error):
         traceback.print_exc()
 
 
-def get_nearest_user(context, username):
+def get_nearest_user(context, usernames):
     all_names = {}
     for member in context.guild.members:
         if not member.bot:
@@ -269,34 +269,37 @@ def get_nearest_user(context, username):
                 all_names[member.nick] = member
             else:
                 all_names[member.name] = member
-    nearest_username = difflib.get_close_matches(username, all_names.keys(), 1, 0.4)
-    return all_names[nearest_username[0]] if nearest_username else None
+    usernames = usernames.split(',')
+    nearest_usernames = [difflib.get_close_matches(username, all_names.keys(), 1, 0.4) for username in usernames]
+    nearest_usernames = [nearest_username[0] if nearest_username else None for nearest_username in nearest_usernames]
+    return nearest_usernames
 
 
 @bot.command(name='givecp', aliases=['giveCP'])
 @commands.has_any_role('DM', 'Lead DM', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
 async def givecp(context, val, username, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
-    user = get_nearest_user(context, username)
-    if not user:
-        await context.send("Can't find a valid user matching {0}.".format(username))
-    else:
-        user_id = user.id
-        _update_cp(cpdatas[dbname], user_id, int(val))
-        remaining_cp = cpdatas[dbname].find_one({'_id': user_id})['cp']
-        messages = [
-            '{0} parcels out {1} CP to {2} for {3}',
-            '{0} forks over {1} CP to {2} for {3}',
-            '{0} dishes out {1} CP to {2} for {3}',
-            '{0} presents {1} CP to {2} for {3}',
-            '{0} administers {1} CP to {2} for {3}',
-            '{0} tips {1} CP to {2} for {3}',
-            '{0} bequeaths {1} CP to {2} for {3}',
-            '{0}...you know..."gives"  ( ͡° ͜ʖ ͡°) {1} CP to {2} for {3}',
-        ]
-        rand = random.randint(1, 8)
-        message = messages[rand-1] + '\n**CP Remaining**: {4}'
-        await context.send(message.format(context.author.mention, val, user.mention, reason, remaining_cp))
+    users = get_nearest_user(context, username)
+    for user in users:
+        if not user:
+            await context.send("Can't find a valid user matching {0}.".format(username))
+        else:
+            user_id = user.id
+            _update_cp(cpdatas[dbname], user_id, int(val))
+            remaining_cp = cpdatas[dbname].find_one({'_id': user_id})['cp']
+            messages = [
+                '{0} parcels out {1} CP to {2} for {3}',
+                '{0} forks over {1} CP to {2} for {3}',
+                '{0} dishes out {1} CP to {2} for {3}',
+                '{0} presents {1} CP to {2} for {3}',
+                '{0} administers {1} CP to {2} for {3}',
+                '{0} tips {1} CP to {2} for {3}',
+                '{0} bequeaths {1} CP to {2} for {3}',
+                '{0}...you know..."gives"  ( ͡° ͜ʖ ͡°) {1} CP to {2} for {3}',
+            ]
+            rand = random.randint(1, 8)
+            message = messages[rand-1] + '\n**CP Remaining**: {4}'
+            await context.send(message.format(context.author.mention, val, user.mention, reason, remaining_cp))
 
 
 @givecp.error

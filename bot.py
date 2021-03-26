@@ -72,9 +72,9 @@ class WordCountCPUpdater(commands.Cog):
                         # Add member notification message to list
                         notification = '{0} earned {1} CP for writing {2} words. Remaining CP: {3}'.format(user.name, cp_gained, word_count, remaining_cp)
                         notification_list.append((word_count, notification))
-                    # Notify members
-                    notification_list.sort(key=lambda tup: tup[0], reverse=True)
-                    notification_list = [notification for word_count, notification in notification_list]
+                # Notify members
+                notification_list.sort(key=lambda tup: tup[0], reverse=True)
+                notification_list = [notification for word_count, notification in notification_list]
                 await channel.send('\n'.join(notification_list))
             self.date = date_now
 

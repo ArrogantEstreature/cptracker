@@ -109,17 +109,6 @@ def _delete_user(db, user_id):
 #     return tz.lower() in timezones
 
 
-async def bj_easter(message):
-    if message.author.id == 253356441073614848: # BJ's ID
-        rand = random.randint(1, 75)
-        if rand == 25:
-            await message.channel.send("{0}, we’ve been trying to reach you about your car's extended warranty.".format(message.author.mention))
-        elif rand == 50:
-            await message.channel.send("*{0} giggles nervously.*".format(message.author.mention))
-        elif rand == 75:
-            await message.channel.send("*{0} smiles and blushes.*".format(message.author.mention))
-
-
 async def alastor_easter(message):
     if message.author.id == 266758722045345811: # Ronnie's ID
         if message.guild.name == 'Last Hope Campaign!':
@@ -187,7 +176,6 @@ async def on_message(message):
         return
     # Only run easter eggs in non-RP channels
     if not is_in_valid_channel(message):
-        await bj_easter(message)
         await alastor_easter(message)
     # Only update word count if message was sent in a valid channel
     try:

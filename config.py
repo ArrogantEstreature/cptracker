@@ -4,8 +4,20 @@ DB_GUILD_CHANNEL_MAPPING = {
         'guild': 'Star Wars WM',
         'cp_tracker_channel': 'cp-tracker',
         'valid_channel_category_ids': [
-            797985544440119296,
-            797987844122738728,
+            797985544440119296, # Leviathan RP
+            797987844122738728, # Tatooine RP
+        ],
+        'valid_channel_ids': [
+            836079866733395979, # New Republic IC Chat
+            836079921368924167, # Empire IC Chat
+            836080001149435944, # Mandalorian IC Chat
+            836080033067171841, # Bounty Hunter IC Chat
+            836080057763102721, # Sith IC Chat
+            836080113422565396, # Jedi IC Chat
+            836080170259185694, # Guardian IC Chat
+            836080233072951346, # Medical Insitution IC Chat
+            836080873329262632, # Ranger Corp IC Chat
+            836081290637344788, # Droid Federation IC Chat
         ],
     },
     'lasthope': {
@@ -14,6 +26,7 @@ DB_GUILD_CHANNEL_MAPPING = {
         'valid_channel_category_ids': [
             763950173079863297,
         ],
+        'valid_channel_ids': [],
     },
 }
 GUILD_DB_MAPPING = {

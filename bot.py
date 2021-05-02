@@ -75,7 +75,10 @@ class WordCountCPUpdater(commands.Cog):
                 # Notify members
                 notification_list.sort(key=lambda tup: tup[0], reverse=True)
                 notification_list = [notification for word_count, notification in notification_list]
-                await channel.send('\n'.join(notification_list))
+                noti_list_1 = notification_list[:15]
+                noti_list_2 = notification_list[15:]
+                await channel.send('\n'.join(noti_list_1))
+                await channel.send('\n'.join(noti_list_2))
             self.date = date_now
 
 

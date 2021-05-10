@@ -7,6 +7,7 @@ DB_GUILD_CHANNEL_MAPPING = {
             797985544440119296, # Leviathan RP
             797987844122738728, # Tatooine RP
             840797936190357504, # Zeltros RP
+            841143606274293792, # Kashyyyk RP
         ],
         'valid_channel_ids': [
             836079866733395979, # New Republic IC Chat

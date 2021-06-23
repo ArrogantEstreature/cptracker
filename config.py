@@ -5,6 +5,7 @@ DB_GUILD_CHANNEL_MAPPING = {
         'cp_tracker_channel': 'cp-tracker',
         'valid_channel_category_ids': [
             797985544440119296, # Leviathan RP
+            853860884883570719, # Holonet RP
             797987844122738728, # Tatooine RP
             840797936190357504, # Zeltros RP
             841143606274293792, # Kashyyyk RP

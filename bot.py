@@ -24,6 +24,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 cluster = MongoClient('mongodb+srv://bachang:{0}@cluster0.pry4u.mongodb.net/test'.format(os.environ['password']))
 databases = {dbname: cluster[dbname] for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys()}
 cpdatas = {dbname: database['cpdata'] for (dbname, database) in databases.items()}
+attendances = {dbname: database['attendance'] for (dbname, database) in databases.items()}
 daily_word_counts = {dbname: database['daily_word_count'] for (dbname, database) in databases.items()}
 # timezone = database['timezone']
 
@@ -35,6 +36,7 @@ class WordCountCPUpdater(commands.Cog):
         self.max_daily_cp = 5
         self.word_count_per_cp = 75
         self.date = datetime.datetime.now(pytz.timezone(config.TIMEZONE)).date()
+        self.month = self.date.month
         self.update_word_count_cp.start()
 
     @tasks.loop(minutes=1.0)
@@ -81,6 +83,31 @@ class WordCountCPUpdater(commands.Cog):
                 await channel.send('\n'.join(noti_list_2))
             self.date = date_now
 
+    @tasks.loop(days=1.0)
+    async def reset_attendance_count(self):
+        # Don't run any commands if the bot is not logged in yet
+        if not self.bot.is_ready():
+            return
+        date_now = datetime.datetime.now(pytz.timezone(config.TIMEZONE)).date()
+        if self.month < date_now.month:
+            for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys():
+                guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
+                bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
+                channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
+                for post in attendances[dbname].find():
+                    userid = post['_id']
+
+                    # Check to see if user exists. Otherwise, delete user and continue
+                    try:
+                        user = await bot.fetch_user(userid)
+                    except discord.errors.NotFound:
+                        _delete_user(cpdatas[dbname], userid)
+                    else:
+                        # Reset attendance count
+                        attendances[dbname].update_one({'_id': userid}, {'$set': {'attendance_count': 0}})
+                await channel.send('Attendance counts have been reset!')
+            self.month = date_now.month
+
 
 def _update_cp(db, user_id, val):
     if db.find_one({'_id': user_id}):
@@ -89,6 +116,15 @@ def _update_cp(db, user_id, val):
         post = {'_id': user_id, 'cp': val}
         db.insert_one(post)
     return db.find_one({'_id': user_id})['cp']
+
+
+def _update_attendance(db, user_id, val):
+    if db.find_one({'_id': user_id}):
+        db.update_one({'_id': user_id}, {'$inc': {'attendance_count': val}})
+    else:
+        post = {'_id': user_id, 'attendance_count': val}
+        db.insert_one(post)
+    return db.find_one({'_id': user_id})['attendance_count']
 
 
 def _delete_user(db, user_id):
@@ -239,6 +275,13 @@ async def checkcp(context):
     await context.send('{0}, you currently have {1} CP.'.format(context.author.mention, cp))
 
 
+@bot.command(name='checkattendance', aliases=['checkattend'])
+async def checkattendance(context):
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+    attendance_count = res['attendance_count'] if (res := attendances[dbname].find_one({'_id': context.author.id})) else 0
+    await context.send('{0}, your attendance count is currently at {1}.'.format(context.author.mention, attendance_count))
+
+
 @bot.command(name='updatecp', aliases=['updateCP'])
 async def updatecp(context, val, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
@@ -282,7 +325,7 @@ def get_nearest_user(context, usernames):
 
 
 @bot.command(name='givecp', aliases=['giveCP'])
-@commands.has_any_role('DM', 'Lead DM', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
 async def givecp(context, val, username, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
@@ -312,6 +355,70 @@ async def givecp_error(context, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
         await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username. For example: `!givecp 5 "DM Creo" "Being an awesome DM"`')
     elif isinstance(error, discord.ext.commands.errors.MissingAnyRole):
+        await context.send('You do not have permission to run this command.')
+    else:
+        traceback.print_exc()
+
+
+@bot.command(name='attendance', aliases=['attend'])
+@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+async def attendance(context, username):
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+    nearest_users, invalid_usernames = get_nearest_user(context, username)
+    user = nearest_users[0]
+    if invalid_usernames:
+        await context.send("Can't find a valid user matching the following inputs: {0}".format(','.join(invalid_usernames)))
+    user_id = user.id
+    _update_attendance(attendances[dbname], user_id, 1)
+    remaining_attendance = cpdatas[dbname].find_one({'_id': user_id})['attendance_count']
+    message = '{0} attended a session! Your attendance count is now at {1}.'
+    await context.send(message.format(user.mention, remaining_attendance))
+
+
+@attendance.error
+async def attendance_error(context, error):
+    if isinstance(error, discord.ext.commands.errors.MissingAnyRole):
+        await context.send('You do not have permission to run this command.')
+    else:
+        traceback.print_exc()
+
+
+@bot.command(name='attendancelist', aliases=['attendlist'])
+@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+async def attendancelist(context):
+    dbname = config.GUILD_DB_MAPPING[context.guild.name]
+
+    attendance_list = []
+    guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
+    bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
+    channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
+    for post in attendances[dbname].find():
+        userid = post['_id']
+
+        # Check to see if user exists. Otherwise, delete user and continue
+        try:
+            user = await bot.fetch_user(userid)
+        except discord.errors.NotFound:
+            _delete_user(cpdatas[dbname], userid)
+        else:
+            attendance_count = post['attendance_count']
+
+            # Add member notification message to list
+            attendance_message = '{0}: {1}'.format(user.name, attendance_count)
+            attendance_list.append((attendance_count, attendance_message))
+        # Notify members
+        await channel.send('__Attendance Count List__')
+        attendance_list.sort(key=lambda tup: tup[0])
+        attendance_list = [attendance_message for attendance_count, attendance_message in attendance_list]
+        attend_list_1 = attendance_list[:20]
+        attend_list_2 = attendance_list[20:]
+        await channel.send('\n'.join(attend_list_1))
+        await channel.send('\n'.join(attend_list_2))
+
+
+@attendancelist.error
+async def attendancelist_error(context, error):
+    if isinstance(error, discord.ext.commands.errors.MissingAnyRole):
         await context.send('You do not have permission to run this command.')
     else:
         traceback.print_exc()

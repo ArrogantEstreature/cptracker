@@ -3,6 +3,7 @@ DB_GUILD_CHANNEL_MAPPING = {
     'sw5e': {
         'guild': 'Star Wars WM',
         'cp_tracker_channel': 'cp-tracker',
+        'bot-channel': 'bot-channel',
         'valid_channel_category_ids': [
             797985544440119296, # Leviathan RP
             853860884883570719, # Holonet RP
@@ -27,6 +28,7 @@ DB_GUILD_CHANNEL_MAPPING = {
     'lasthope': {
         'guild': 'Last Hope Campaign!',
         'cp_tracker_channel': 'chat-point-tracker',
+        'bot-channel': 'bot-channel',
         'valid_channel_category_ids': [
             763950173079863297,
         ],

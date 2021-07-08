@@ -77,10 +77,10 @@ class WordCountCPUpdater(commands.Cog):
                 # Notify members
                 notification_list.sort(key=lambda tup: tup[0], reverse=True)
                 notification_list = [notification for word_count, notification in notification_list]
-                noti_list_1 = notification_list[:20]
-                noti_list_2 = notification_list[20:]
-                await channel.send('\n'.join(noti_list_1))
-                await channel.send('\n'.join(noti_list_2))
+                # Splits the list into a list of sublists of size 20
+                notification_lists = [notification_list[i:i + 20] for i in range(0, len(notification_list), 20)]
+                for l in notification_lists:
+                    await channel.send('\n'.join(l))
             self.date = date_now
 
     @tasks.loop(hours=24.0)
@@ -406,14 +406,13 @@ async def attendancelist(context):
             # Add member notification message to list
             attendance_message = '{0}: {1}'.format(user.name, attendance_count)
             attendance_list.append((attendance_count, attendance_message))
-        # Notify members
-        await channel.send('__Attendance Count List__')
-        attendance_list.sort(key=lambda tup: tup[0])
-        attendance_list = [attendance_message for attendance_count, attendance_message in attendance_list]
-        attend_list_1 = attendance_list[:20]
-        attend_list_2 = attendance_list[20:]
-        await channel.send('\n'.join(attend_list_1))
-        # await channel.send('\n'.join(attend_list_2))
+    # Notify members
+    await channel.send('__Attendance Count List__')
+    attendance_list.sort(key=lambda tup: tup[0])
+    attendance_list = [attendance_message for attendance_count, attendance_message in attendance_list]
+    attendance_lists = [attendance_list[i:i + 20] for i in range(0, len(attendance_list), 20)] # Splits the list into a list of sublists of size 20
+    for l in attendance_lists:
+        await channel.send('\n'.join(l))
 
 
 @attendancelist.error

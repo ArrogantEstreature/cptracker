@@ -390,7 +390,7 @@ async def attendancelist(context):
 
     attendance_list = []
     guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
-    bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
+    bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot-channel']
     channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
     for post in attendances[dbname].find():
         userid = post['_id']
@@ -399,7 +399,7 @@ async def attendancelist(context):
         try:
             user = await bot.fetch_user(userid)
         except discord.errors.NotFound:
-            _delete_user(cpdatas[dbname], userid)
+            _delete_user(attendances[dbname], userid)
         else:
             attendance_count = post['attendance_count']
 
@@ -413,7 +413,7 @@ async def attendancelist(context):
         attend_list_1 = attendance_list[:20]
         attend_list_2 = attendance_list[20:]
         await channel.send('\n'.join(attend_list_1))
-        await channel.send('\n'.join(attend_list_2))
+        # await channel.send('\n'.join(attend_list_2))
 
 
 @attendancelist.error

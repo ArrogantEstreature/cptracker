@@ -83,7 +83,7 @@ class WordCountCPUpdater(commands.Cog):
                 await channel.send('\n'.join(noti_list_2))
             self.date = date_now
 
-    @tasks.loop(days=1.0)
+    @tasks.loop(hours=24.0)
     async def reset_attendance_count(self):
         # Don't run any commands if the bot is not logged in yet
         if not self.bot.is_ready():
@@ -370,8 +370,8 @@ async def attendance(context, username):
         await context.send("Can't find a valid user matching the following inputs: {0}".format(','.join(invalid_usernames)))
     user_id = user.id
     _update_attendance(attendances[dbname], user_id, 1)
-    remaining_attendance = cpdatas[dbname].find_one({'_id': user_id})['attendance_count']
-    message = '{0} attended a session! Your attendance count is now at {1}.'
+    remaining_attendance = attendances[dbname].find_one({'_id': user_id})['attendance_count']
+    message = '{0} attended a session! Their attendance count is now at {1}.'
     await context.send(message.format(user.mention, remaining_attendance))
 
 

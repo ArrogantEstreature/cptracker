@@ -326,7 +326,7 @@ def get_nearest_user(context, usernames):
 
 @bot.command(name='givecp', aliases=['giveCP'])
 @commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
-async def givecp(context, val, username, reason='Manual Adjustment'):
+async def givecp(context, username, val, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
     if invalid_usernames:
@@ -353,7 +353,7 @@ async def givecp(context, val, username, reason='Manual Adjustment'):
 @givecp.error
 async def givecp_error(context, error):
     if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
-        await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username. For example: `!givecp 5 "DM Creo" "Being an awesome DM"`')
+        await context.send('ERROR: The givecp function requires at least 2 arguments, CP value and username. For example: `!givecp "DM Creo" 5 "Being an awesome DM"`')
     elif isinstance(error, discord.ext.commands.errors.MissingAnyRole):
         await context.send('You do not have permission to run this command.')
     else:
@@ -362,14 +362,14 @@ async def givecp_error(context, error):
 
 @bot.command(name='attendance', aliases=['attend'])
 @commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
-async def attendance(context, username):
+async def attendance(context, username, val=1):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
     user = nearest_users[0]
     if invalid_usernames:
         await context.send("Can't find a valid user matching the following inputs: {0}".format(','.join(invalid_usernames)))
     user_id = user.id
-    _update_attendance(attendances[dbname], user_id, 1)
+    _update_attendance(attendances[dbname], user_id, val)
     remaining_attendance = attendances[dbname].find_one({'_id': user_id})['attendance_count']
     message = '{0} attended a session! Their attendance count is now at {1}.'
     await context.send(message.format(user.mention, remaining_attendance))

@@ -90,22 +90,22 @@ class WordCountCPUpdater(commands.Cog):
             return
         date_now = datetime.datetime.now(pytz.timezone(config.TIMEZONE)).date()
         if self.month < date_now.month:
-            for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys():
-                guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
-                bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
-                channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
-                for post in attendances[dbname].find():
-                    userid = post['_id']
-
-                    # Check to see if user exists. Otherwise, delete user and continue
-                    try:
-                        user = await bot.fetch_user(userid)
-                    except discord.errors.NotFound:
-                        _delete_user(cpdatas[dbname], userid)
-                    else:
-                        # Reset attendance count
-                        attendances[dbname].update_one({'_id': userid}, {'$set': {'attendance_count': 0}})
-                await channel.send('Attendance counts have been reset!')
+            # for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys():
+            #     guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
+            #     bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
+            #     channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
+            #     for post in attendances[dbname].find():
+            #         userid = post['_id']
+            #
+            #         # Check to see if user exists. Otherwise, delete user and continue
+            #         try:
+            #             user = await bot.fetch_user(userid)
+            #         except discord.errors.NotFound:
+            #             _delete_user(cpdatas[dbname], userid)
+            #         else:
+            #             # Reset attendance count
+            #             attendances[dbname].update_one({'_id': userid}, {'$set': {'attendance_count': 0}})
+            #     await channel.send('Attendance counts have been reset!')
             self.month = date_now.month
 
 

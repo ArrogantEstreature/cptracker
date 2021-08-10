@@ -423,6 +423,12 @@ async def attendancelist_error(context, error):
         traceback.print_exc()
 
 
+@bot.command(name='dtroll')
+async def dtroll(context, roll):
+    message = '!r {0}'.format(roll)
+    await context.send(message)
+
+
 @bot.command(name='checkmyass')
 async def checkmyass(context):
     rand = random.randint(1,13)

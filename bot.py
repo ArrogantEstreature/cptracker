@@ -488,7 +488,10 @@ async def dtroll(context, dt, skill, adv=None):
 
 @dtroll.error
 async def dtroll_error(context, error):
-    traceback.print_exc()
+    if isinstance(error, discord.ext.commands.errors.MissingRequiredArgument):
+        await context.send('ERROR: The dtroll function requires at least 2 arguments, downtime activity and roll modifier.')
+    else:
+        traceback.print_exc()
 
 
 @bot.command(name='checkmyass')

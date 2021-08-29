@@ -423,12 +423,10 @@ async def attendancelist_error(context, error):
         traceback.print_exc()
 
 
-def dtresults(dt, result, skill_total, context):
-    await context.send('part 5')
+def dtresults(dt, result, skill_total):
     if skill_total < 10 and dt in config.SW5E_FAILURE_DOWNTIME.keys():
         return config.SW5E_FAILURE_DOWNTIME[dt]
     result_string = config.SW5E_DOWNTIME[dt]
-    await context.send('part 6')
     if result <= 40:
         result_string = result_string['40-']
     elif 41 <= result <= 70:
@@ -486,8 +484,9 @@ async def dtroll(context, dt, skill, adv=None):
     mod = max(((skill_total // 5) - 1) * 5, 0)
     modstr = 'Modifier ({mod})'.format(mod=mod)
     result = d100 + mod
-    result_string = dtresults(dt, result, skill_total, context)
     await context.send('part 4')
+    result_string = dtresults(dt, result, skill_total)
+    await context.send('part 5')
     message = message.format(skill_check=skill_check, skill_total=skill_total, mod=mod, modstr=modstr, result=result, result_string=result_string)
     await context.send(message)
 

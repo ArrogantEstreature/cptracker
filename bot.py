@@ -424,8 +424,30 @@ async def attendancelist_error(context, error):
 
 
 @bot.command(name='dtroll')
-async def dtroll(context, roll):
-    message = '!r {0}'.format(roll)
+async def dtroll(context, mod, adv):
+    if mod >= 0:
+        message = '{author}\n**Result**: {{roll}} + {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=mod)
+    else:
+        message = '{author}\n**Result**: {{roll}} - {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=abs(mod))
+    r1 = random.randrange(1, 21)
+    r2 = random.randrange(1, 21)
+    if adv != 'adv' or adv != 'dis':
+        r = r1
+        roll = '1d20 ({r})'.format(r)
+    else:
+        if adv == 'adv':
+            r = max(r1, r2)
+            roll = '2d20kh1 ({r1}, {r2})'
+        else:
+            r = min(r1, r2)
+            roll = '2d20kl1 ({r1}, {r2})'
+        if r == r1:
+            r2 = '~~' + str(r2) + '~~'
+        else:
+            r1 = '~~' + str(r1) + '~~'
+        roll = roll.format(r1=r1, r2=r2)
+    total = r + mod
+    message = message.format(roll=roll, total=total)
     await context.send(message)
 
 

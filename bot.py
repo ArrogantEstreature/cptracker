@@ -478,7 +478,7 @@ async def dtroll(context, dt, skill, adv=None):
             r1 = '~~' + str(r1) + '~~'
         skill_check = skill_check.format(r1=r1, r2=r2)
     skill_total = d20 + skill
-    mod = max(((skill_total // 5) - 1) * 5, 0)
+    mod = min(max(((skill_total // 5) - 1) * 5, 0), 25)
     modstr = 'Modifier ({mod})'.format(mod=mod)
     result = d100 + mod
     result_string = dtresults(dt, result, skill_total)

@@ -423,32 +423,66 @@ async def attendancelist_error(context, error):
         traceback.print_exc()
 
 
-@bot.command(name='dtroll')
-async def dtroll(context, mod, adv=None):
-    mod = int(mod)
-    if int(mod) >= 0:
-        message = '{author}\n**Result**: {{roll}} + {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=mod)
+def dtresults(dt, result, skill_total):
+    if skill_total < 10 and dt in config.SW5E_FAILURE_DOWNTIME.keys():
+        return config.SW5E_FAILURE_DOWNTIME[dt]
+    result_string = config.SW5E_DOWNTIME[dt]
+    if result <= 40:
+        result_string = result_string['40-']
+    elif 41 <= result <= 70:
+        result_string = result_string['41-70']
+    elif 71 <= result <= 100:
+        result_string = result_string['71-100']
+    elif 101 <= result <= 110:
+        result_string = result_string['101-110']
     else:
-        message = '{author}\n**Result**: {{roll}} - {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=abs(mod))
+        result_string = result_string['111+']
+    return result_string
+
+
+@bot.command(name='dtroll')
+async def dtroll(context, dt, skill, adv=None):
+    skill = int(skill)
+    skillstr = 'Skill ({skill})'.format(skill=abs(skill))
+    d100 = random.randrange(1, 101)
+    result_check = '1d100 ({d100})'.format(d100=d100)
+    if int(skill) >= 0:
+        message = """
+            {author}\n
+            **Resolution**: Rolling {{skill_check}} + {skill} = {{skill_total}} : Modifier = {{mod}}\n
+            **Result**: Rolling {result_check} + {{modstr}} = {{result}}\n
+            {{result_string}}
+        """.format(author=context.author.mention, skill=skillstr, result_check=result_check)
+    else:
+        message = """
+            {author}\n
+            **Resolution**: Rolling {{skill_check}} - {skill} = {{skill_total}} : Modifier = {{mod}}\n
+            **Result**: Rolling {result_check} + {{modstr}} = {{result}}\n
+            {{result_string}}
+        """.format(author=context.author.mention, skill=skillstr, result_check=result_check)
     r1 = random.randrange(1, 21)
     r2 = random.randrange(1, 21)
     if adv != 'adv' and adv != 'dis':
-        r = r1
-        roll = '1d20 ({r})'.format(r=r)
+        d20 = r1
+        skill_check = '1d20 ({d20})'.format(d20=d20)
     else:
         if adv == 'adv':
-            r = max(r1, r2)
-            roll = '2d20kh1 ({r1}, {r2})'
+            d20 = max(r1, r2)
+            skill_check = '2d20kh1 ({r1}, {r2})'
         else:
-            r = min(r1, r2)
-            roll = '2d20kl1 ({r1}, {r2})'
-        if r == r1:
+            d20 = min(r1, r2)
+            skill_check = '2d20kl1 ({r1}, {r2})'
+        if d20 == r1:
             r2 = '~~' + str(r2) + '~~'
         else:
             r1 = '~~' + str(r1) + '~~'
-        roll = roll.format(r1=r1, r2=r2)
-    total = r + mod
-    message = message.format(roll=roll, total=total)
+        skill_check = skill_check.format(r1=r1, r2=r2)
+    skill_total = d20 + skill
+    mod = max(((skill_total // 5) - 1) * 5, 0)
+    modstr = 'Modifier ({mod})'.format(mod=mod)
+    result = d100 + mod
+    result_string = dtresults(dt, result, skill_total)
+    message = message.format(skill_check=skill_check, skill_total=skill_total, mod=mod, modstr=modstr, result=result, result_string=result_string)
     await context.send(message)
 
 

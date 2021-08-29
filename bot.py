@@ -424,8 +424,8 @@ async def attendancelist_error(context, error):
 
 
 @bot.command(name='dtroll')
-async def dtroll(context, mod, adv):
-    if mod >= 0:
+async def dtroll(context, mod, adv=None):
+    if int(mod) >= 0:
         message = '{author}\n**Result**: {{roll}} + {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=mod)
     else:
         message = '{author}\n**Result**: {{roll}} - {mod}\n**Total**: {{total}}'.format(author=context.author.mention, mod=abs(mod))

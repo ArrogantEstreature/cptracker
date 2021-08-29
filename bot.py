@@ -486,6 +486,11 @@ async def dtroll(context, dt, skill, adv=None):
     await context.send(message)
 
 
+@dtroll.error
+async def dtroll_error(context, error):
+    traceback.print_exc()
+
+
 @bot.command(name='checkmyass')
 async def checkmyass(context):
     rand = random.randint(1,13)

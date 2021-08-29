@@ -442,7 +442,6 @@ def dtresults(dt, result, skill_total):
 
 @bot.command(name='dtroll')
 async def dtroll(context, dt, skill, adv=None):
-    await context.send('part 1')
     skill = int(skill)
     skillstr = 'Skill ({skill})'.format(skill=abs(skill))
     d100 = random.randrange(1, 101)
@@ -463,7 +462,6 @@ async def dtroll(context, dt, skill, adv=None):
         """.format(author=context.author.mention, skill=skillstr, result_check=result_check)
     r1 = random.randrange(1, 21)
     r2 = random.randrange(1, 21)
-    await context.send('part 2')
     if adv != 'adv' and adv != 'dis':
         d20 = r1
         skill_check = '1d20 ({d20})'.format(d20=d20)
@@ -479,14 +477,11 @@ async def dtroll(context, dt, skill, adv=None):
         else:
             r1 = '~~' + str(r1) + '~~'
         skill_check = skill_check.format(r1=r1, r2=r2)
-    await context.send('part 3')
     skill_total = d20 + skill
     mod = max(((skill_total // 5) - 1) * 5, 0)
     modstr = 'Modifier ({mod})'.format(mod=mod)
     result = d100 + mod
-    await context.send('part 4')
     result_string = dtresults(dt, result, skill_total)
-    await context.send('part 5')
     message = message.format(skill_check=skill_check, skill_total=skill_total, mod=mod, modstr=modstr, result=result, result_string=result_string)
     await context.send(message)
 

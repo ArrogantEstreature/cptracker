@@ -38,6 +38,7 @@ class WordCountCPUpdater(commands.Cog):
         self.date = datetime.datetime.now(pytz.timezone(config.TIMEZONE)).date()
         self.month = self.date.month
         self.update_word_count_cp.start()
+        self.reset_attendance_count.start()
 
     @tasks.loop(minutes=1.0)
     async def update_word_count_cp(self):
@@ -83,16 +84,16 @@ class WordCountCPUpdater(commands.Cog):
                     await channel.send('\n'.join(l))
             self.date = date_now
 
-    @tasks.loop(hours=24.0)
+    @tasks.loop(hours=1.0)
     async def reset_attendance_count(self):
         # Don't run any commands if the bot is not logged in yet
         if not self.bot.is_ready():
             return
         date_now = datetime.datetime.now(pytz.timezone(config.TIMEZONE)).date()
-        if self.month < date_now.month:
+        if date_now.month % 3 == 1 and (self.month < date_now.month or (self.month == 12 and date_now.month == 1)):
             for dbname in config.DB_GUILD_CHANNEL_MAPPING.keys():
                 guild = config.DB_GUILD_CHANNEL_MAPPING[dbname]['guild']
-                bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot_channel']
+                bot_channel = config.DB_GUILD_CHANNEL_MAPPING[dbname]['bot-channel']
                 channel = discord.utils.get(bot.get_all_channels(), guild__name=guild, name=bot_channel)
                 for post in attendances[dbname].find():
                     userid = post['_id']

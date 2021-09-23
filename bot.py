@@ -56,10 +56,18 @@ class WordCountCPUpdater(commands.Cog):
                 for post in daily_word_counts[dbname].find():
                     userid = post['_id']
 
+                    # Check to see if user is still part of the server. Otherwise, delete user and continue
+                    guild = channel.guild
+                    if guild.get_member(userid) is None:
+                        _delete_user(daily_word_counts[dbname], userid)
+                        _delete_user(cpdatas[dbname], userid)
+                        continue
+
                     # Check to see if user exists. Otherwise, delete user and continue
                     try:
                         user = await bot.fetch_user(userid)
                     except discord.errors.NotFound:
+                        _delete_user(daily_word_counts[dbname], userid)
                         _delete_user(cpdatas[dbname], userid)
                     else:
                         word_count = post['word_count']
@@ -97,11 +105,17 @@ class WordCountCPUpdater(commands.Cog):
                 for post in attendances[dbname].find():
                     userid = post['_id']
 
+                    # Check to see if user is still part of the server. Otherwise, delete user and continue
+                    guild = channel.guild
+                    if guild.get_member(userid) is None:
+                        _delete_user(attendances[dbname], userid)
+                        continue
+
                     # Check to see if user exists. Otherwise, delete user and continue
                     try:
                         user = await bot.fetch_user(userid)
                     except discord.errors.NotFound:
-                        _delete_user(cpdatas[dbname], userid)
+                        _delete_user(attendances[dbname], userid)
                     else:
                         # Reset attendance count
                         attendances[dbname].update_one({'_id': userid}, {'$set': {'attendance_count': 0}})

@@ -30,7 +30,6 @@ daily_word_counts = {dbname: database['daily_word_count'] for (dbname, database)
 
 
 class WordCountCPUpdater(commands.Cog):
-
     def __init__(self, bot_instance):
         self.bot = bot_instance
         self.max_daily_cp = 5
@@ -363,7 +362,7 @@ async def givecp_error(context, error):
 
 @bot.command(name='attendance', aliases=['attend'])
 @commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
-async def attendance(context, username, val=1):
+async def attendance(context, username, val=1.0):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
     user = nearest_users[0]

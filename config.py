@@ -31,7 +31,17 @@ DB_GUILD_CHANNEL_MAPPING = {
         'cp_tracker_channel': 'chat-point-tracker',
         'bot-channel': 'bot-channel',
         'valid_channel_category_ids': [
-            763950173079863297,
+            763950173079863297, # Roleplay Channels
+        ],
+        'valid_channel_ids': [],
+    },
+    'lasthope': {
+        'guild': 'StarBreak',
+        'cp_tracker_channel': 'cp-tracker',
+        'bot-channel': 'bot-channel',
+        'valid_channel_category_ids': [
+            903023805214101544, # Internet RP
+            903026947674734613, # New Orleans RP
         ],
         'valid_channel_ids': [],
     },

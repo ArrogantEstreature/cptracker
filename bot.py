@@ -339,7 +339,7 @@ def get_nearest_user(context, usernames):
 
 
 @bot.command(name='givecp', aliases=['giveCP'])
-@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+@commands.has_any_role(*config.COMMAND_PERMISSION_ROLES)
 async def givecp(context, username, val, reason='Manual Adjustment'):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
@@ -375,7 +375,7 @@ async def givecp_error(context, error):
 
 
 @bot.command(name='attendance', aliases=['attend'])
-@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+@commands.has_any_role(*config.COMMAND_PERMISSION_ROLES)
 async def attendance(context, username, val=1.0):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
     nearest_users, invalid_usernames = get_nearest_user(context, username)
@@ -398,7 +398,7 @@ async def attendance_error(context, error):
 
 
 @bot.command(name='attendancelist', aliases=['attendlist'])
-@commands.has_any_role('DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes')
+@commands.has_any_role(*config.COMMAND_PERMISSION_ROLES)
 async def attendancelist(context):
     dbname = config.GUILD_DB_MAPPING[context.guild.name]
 

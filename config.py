@@ -1,4 +1,5 @@
 TIMEZONE = 'America/Chicago'
+COMMAND_PERMISSION_ROLES = ['DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes', 'Technomancer']
 DB_GUILD_CHANNEL_MAPPING = {
     'sw5e': {
         'guild': 'Star Wars WM',

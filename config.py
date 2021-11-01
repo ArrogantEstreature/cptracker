@@ -35,7 +35,7 @@ DB_GUILD_CHANNEL_MAPPING = {
         ],
         'valid_channel_ids': [],
     },
-    'lasthope': {
+    'starbreak': {
         'guild': 'StarBreak',
         'cp_tracker_channel': 'cp-tracker',
         'bot-channel': 'bot-channel',
@@ -49,6 +49,7 @@ DB_GUILD_CHANNEL_MAPPING = {
 GUILD_DB_MAPPING = {
     'Star Wars WM': 'sw5e',
     'Last Hope Campaign!': 'lasthope',
+    'StarBreak': 'starbreak',
 }
 SW5E_DOWNTIME = {
     'bountyhunting': {

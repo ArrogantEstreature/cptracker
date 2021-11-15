@@ -48,7 +48,7 @@ DB_GUILD_CHANNEL_MAPPING = {
     },
 }
 GUILD_DB_MAPPING = {
-    'Star Wars WM': 'sw5e',
+    'Leviathan Project (WM)': 'sw5e',
     'Last Hope Campaign!': 'lasthope',
     'StarBreak': 'starbreak',
 }

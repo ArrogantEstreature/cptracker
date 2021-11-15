@@ -2,7 +2,7 @@ TIMEZONE = 'America/Chicago'
 COMMAND_PERMISSION_ROLES = ['DM', 'Lead DM', 'temp dm', 'Techno Wiz (Our Claptrap)', 'Tech Dudes', 'Technomancer']
 DB_GUILD_CHANNEL_MAPPING = {
     'sw5e': {
-        'guild': 'Star Wars WM',
+        'guild': 'Leviathan Project (WM)',
         'cp_tracker_channel': 'cp-tracker',
         'bot-channel': 'bot-channel',
         'valid_channel_category_ids': [

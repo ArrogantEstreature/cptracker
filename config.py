@@ -13,6 +13,7 @@ DB_GUILD_CHANNEL_MAPPING = {
             841143606274293792, # Kashyyyk RP
             860658786791325706, # Convor RP
             886293422997135460, # Korriban RP
+            922683438593609788, # Tellus RP
         ],
         'valid_channel_ids': [
             836079866733395979, # New Republic IC Chat

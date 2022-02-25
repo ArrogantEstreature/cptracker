@@ -27,7 +27,7 @@ DB_GUILD_CHANNEL_MAPPING = {
             836081290637344788, # Droid Federation IC Chat
         ],
     },
-    'lasthope': {
+    'Mists of Asira': {
         'guild': 'Last Hope Campaign!',
         'cp_tracker_channel': 'chat-point-tracker',
         'bot-channel': 'bot-channel',
